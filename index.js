@@ -1,4 +1,4 @@
 import Photo from './src/components/Photo';
-// import BottomToolBar from './src/components/BottomToolBar';
+import Video from './src/components/Video';
 
-export { Photo };
+export { Photo, Video };

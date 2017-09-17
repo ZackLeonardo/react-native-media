@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>video player</title>
+    <style type="text/css">
+    /*禁止html长按等事件*/
+    *{
+      -webkit-touch-callout:none;
+      -webkit-user-select:none;
+      -khtml-user-select:none;
+      -moz-user-select:none;
+      -ms-user-select:none;
+      user-select:none;
+    }
+    #videoContainer {
+      /*position: absolute;
+      top:50%;
+      left:50%;
+      margin-top:-50px;
+      margin-left:-50px;
+      height: 100px;
+      width: 100px;*/
+      width: 100%;
+      object-fit: fill;
+      object-position: center center;
+     }
+    </style>
+  </head>
+  <body bgcolor="black">
+    <script>
+    document.addEventListener("message", function(data) {
+      alert(data.data);
+    });
+
+    function sendMessage(message){
+      window.postMessage(message);
+    }
+
+    function setVideoUri(uri, autoPlay, isFullScreen)
+    {
+      var videoContainer=document.getElementById("videoContainer");
+      if (isFullScreen) {
+        videoContainer.WebKitPlaysInline = false;
+        videoContainer.playsinline = false;
+      } else {
+        videoContainer.setAttribute('webkit-playsinline', 'webkit-playsinline');
+        videoContainer.setAttribute('playsinline', 'playsinline');
+      }
+      var source = document.createElement('source');
+      source.setAttribute('src', uri);
+
+      videoContainer.appendChild(source);
+
+      if (autoPlay) {
+        videoContainer.play();
+      }else {
+        videoContainer.load();
+      }
+      // var videoContainer=document.getElementById("videoContainer");
+      // var source = document.createElement('source');
+      // source.setAttribute('src', './movie.mp4');
+      //
+      // videoContainer.appendChild(source);
+      // videoContainer.play();
+      // setTimeout(function() {
+      //   videoContainer.pause();
+      //   source.setAttribute('src', uri);
+      //   videoContainer.load();
+      //   videoContainer.play();
+      // }, 3000);
+    }
+
+    function getVideoInfo () {
+      var video = document.getElementById("videoContainer");
+      var videoH = video.videoHeight;
+      var videoW = video.videoWidth;
+      console.log("Height: " + video.videoHeight + ", Width: " + video.videoWidth);
+      console.log("Height: " + videoH + ", Width: " + videoW);
+      var videoRatio = videoH / videoW;
+      console.log(videoRatio);
+      window.onresize = function() {
+          if (video.height() / video.width() > videoRatio) {
+              console.log('Width:' + video.width() + ' Height: ' + (video.width() * videoRatio));
+          } else {
+              console.log('Width:' + video.height() / videoRatio + ' Height: ' + video.height());
+          }
+      }
+    }
+    </script>
+    <video id='videoContainer' controls></video>
+    <script>
+    var i = 0;
+    var video = document.getElementById('videoContainer');
+    video.addEventListener( "durationchange", function (e) {
+      updateHeight();
+    }, false );
+    video.addEventListener("loadeddata", function(){
+      sendMessage('loadeddata');
+    }, false);
+    function updateHeight() {
+      var radio = 1;
+      if (video.videoWidth != 0){
+        radio = video.videoHeight / video.videoWidth;
+      }
+      document.title = radio;
+      window.location.hash = ++i;
+    }
+
+    window.addEventListener("load", function() {
+      updateHeight();
+      setTimeout(updateHeight, 100);
+    });
+
+    window.addEventListener("resize", updateHeight);
+    </script>
+  </body>
+</html>

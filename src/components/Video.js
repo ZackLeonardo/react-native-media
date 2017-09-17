@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
   View,
-  Image,
+  WebView,
   Dimensions,
+  TouchableHighlight,
   TouchableWithoutFeedback,
   ActivityIndicator,
   StyleSheet,
@@ -11,9 +12,8 @@ import {
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
-// import * as Progress from 'react-native-progress';
 
-export default class Photo extends Component {
+export default class Video extends Component {
   constructor(props){
     super(props);
 
@@ -23,11 +23,11 @@ export default class Photo extends Component {
       uri: lazyLoad ? null : uri,
       progress: 0,
       error: false,
+      videoRatio: 1,
     };
 
-    this._onProgress = this._onProgress.bind(this);
-    this._onError = this._onError.bind(this);
-    this._onLoad = this._onLoad.bind(this);
+    this._onPress = this._onPress.bind(this);
+    this._onMessage = this._onMessage.bind(this);
     this._toggleSelection = this._toggleSelection.bind(this);
   }
 
@@ -39,6 +39,21 @@ export default class Photo extends Component {
     }
   }
 
+  _onPress(){
+    console.log('_onPressButton');
+    // this.webview.postMessage("Hello from RN");
+  }
+
+  _onMessage(event){
+    console.log('message from web:'+event.nativeEvent.data);
+    if (event.nativeEvent.data) {
+      this.setState({
+        progress: 1,
+      });
+      console.log(this.state.progress);
+    }
+  }
+
   _renderErrorIcon() {
     return (
       <Icon name="error-outline" size={22} color={'red'}/>
@@ -46,47 +61,13 @@ export default class Photo extends Component {
   }
 
   _renderProgressIndicator() {
-    const { useCircleProgress } = this.props;
+    const { useCircleProgress } = this.props; // not yet
     const { progress } = this.state;
 
     if (progress < 1) {
       return <ActivityIndicator animating={ true }/>;
-      // if (Platform.OS === 'android') {
-      //   return <ActivityIndicator animating={ true }/>;
-      // }
-      //
-      // const ProgressElement = useCircleProgress ? Progress.Circle : Progress.Bar;
-      // return (
-      //   <ProgressElement
-      //     progress={progress}
-      //     thickness={20}
-      //     color={'white'}
-      //   />
-      // );
     }
     return null;
-  }
-
-  _onProgress(event) {
-    const progress = event.nativeEvent.loaded / event.nativeEvent.total;
-    if (!this.props.thumbnail && progress !== this.state.progress) {
-      this.setState({
-        progress,
-      });
-    }
-  }
-
-  _onError() {
-    this.setState({
-      error: true,
-      progress: 1,
-    });
-  }
-
-  _onLoad() {
-    this.setState({
-      progress: 1,
-    });
   }
 
   _toggleSelection() {
@@ -126,50 +107,68 @@ export default class Photo extends Component {
     );
   }
 
-  render(){
-    const { resizeMode, width, height } = this.props;
+  onNavigationStateChange(navState) {
+    if (navState.title && navState.title != 'NaN') {
+        const realContentHeight = Number(navState.title) || 0; // turn NaN to 0
+        console.log(realContentHeight);
+        this.setState({videoRatio: realContentHeight});
+    }
+  }
+
+  render() {
+    const { resizeMode, width, height, thumbnail } = this.props;
     const screen = Dimensions.get('window');
     const { uri, error } = this.state;
+    const jsCode = "setVideoUri('" + uri + "', false, false)";
 
     const layoutStyle = {
       width: width || screen.width,
-      height: height || screen.height,
+      height: this.state.videoRatio * width || this.state.videoRatio * screen.width,
     };
 
-    let source;
-    if (uri) {
-      // 可以兼容网络资源和本地资源
-      source = typeof uri === 'string' ? { uri } : uri;
-    }
+    console.log(`width: ${layoutStyle.width} height: ${layoutStyle.height}`);
 
     return (
       <View style={[styles.container, layoutStyle]}>
         {error ? this._renderErrorIcon() : this._renderProgressIndicator()}
-        <Image
-          {...this.props}
-          style={[styles.image, layoutStyle]}
-          source={source}
-          onProgress={this._onProgress}
-          onError={this._onError}
-          onLoad={this._onLoad}
-          resizeMode={resizeMode}
-        />
+        <TouchableHighlight
+          onPress={this._onPress}
+          style={[styles.webViewContainer, layoutStyle]}
+        >
+          <View>
+            <WebView
+              ref={webview => { this.webview = webview; }}
+              style={[styles.webViewContainer, layoutStyle]}
+              source={require('./videoContainer.html')}
+              allowsInlineMediaPlayback = {true}
+              onMessage={this._onMessage}
+              javaScriptEnabled={true}
+              injectedJavaScript={jsCode}
+              automaticallyAdjustContentInsets={false}
+              onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+              />
+          </View>
+        </TouchableHighlight>
         {this._renderSelectionButton()}
       </View>
     );
   }
-};
+}
 
-Photo.defaultProps = {
+Video.defaultProps = {
+  // uri: 'https://raw.githubusercontent.com/ZackLeonardo/react-native-media/master/example/movie.mp4',
+  uri: 'https://raw.githubusercontent.com/react-native-community/react-native-video/master/example/broadchurch.mp4',
   lazyLoad: false,
   resizeMode: 'contain',
   useCircleProgress: true,
   thumbnail: false,
-  displaySelectionButtons: false,
-  selected: false,
+  displaySelectionButtons: true,
+  selected: true,
+  width: null,
+  height: null,
 };
 
-Photo.propTypes = {
+Video.propTypes = {
   uri: PropTypes.oneOfType([
     // assets or http url
     PropTypes.string,
@@ -177,7 +176,6 @@ Photo.propTypes = {
     PropTypes.number,
   ]).isRequired,
   lazyLoad: PropTypes.bool,
-  onSelection: PropTypes.func,
   resizeMode: PropTypes.string,
   width: PropTypes.number,
   height: PropTypes.number,
@@ -185,19 +183,20 @@ Photo.propTypes = {
   thumbnail: PropTypes.bool,
   displaySelectionButtons: PropTypes.bool,
   selected: PropTypes.bool,
+  onSelection: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor:'black',
   },
-  image: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  webViewContainer: {
+    justifyContent:'center',
+    alignItems:'center',
+    minWidth: 245,
+    // minHeight: 10,
   },
   thumbnailSelectionIcon: {
     position: 'absolute',
