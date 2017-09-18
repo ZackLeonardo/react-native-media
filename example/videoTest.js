@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 
-import {Video, Photo} from 'react-native-media';
+import {Video, Photo} from '@zdy/react-native-media';
 
 export default class Test extends Component {
   _onPress(){

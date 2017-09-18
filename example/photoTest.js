@@ -5,7 +5,7 @@ import {
   View,
 } from 'react-native';
 
-import { Photo } from 'react-native-media';
+import { Photo } from '@zdy/react-native-media';
 
 export default class Test extends Component {
   render() {

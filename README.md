@@ -6,7 +6,7 @@ The component which shows image or video, in full screen or thumbnail.
 ## Installation
  (for myself in private npm store)
 ```
-yarn add react-native-media
+yarn add @zdy/react-native-media
 ```
 
 (for everyone)
