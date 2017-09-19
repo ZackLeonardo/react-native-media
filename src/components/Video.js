@@ -13,6 +13,11 @@ import {
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+import CONSTANTS from '../utils/constants';
+
+const iconUnselectedColor = CONSTANTS.ICONUNSELECTEDCOLOR;
+const iconSelectedColor = CONSTANTS.ICONSELECTEDCOLOR;
+
 export default class Video extends Component {
   constructor(props){
     super(props);
@@ -40,7 +45,7 @@ export default class Video extends Component {
   }
 
   _onPress(){
-    console.log('_onPressButton');
+    // console.log('_onPressButton');
     // this.webview.postMessage("Hello from RN");
   }
 
@@ -50,7 +55,6 @@ export default class Video extends Component {
       this.setState({
         progress: 1,
       });
-      console.log(this.state.progress);
     }
   }
 
@@ -87,21 +91,21 @@ export default class Video extends Component {
 
     let buttonImage;
     if (thumbnail) {
-      let icon = <Icon name="check-circle-o" size={16} color={'rgba(249, 249, 249, 0.2)'} style={styles.thumbnailSelectionIcon}/>;
+      let icon = <Icon name="check-circle-o" size={16} color={iconUnselectedColor} style={styles.thumbnailSelectionIcon}/>;
       if (selected) {
-        icon = <Icon name="check-circle" size={16} color={'rgba(255, 255, 255, 1)'} style={styles.thumbnailSelectionIcon}/>;
+        icon = <Icon name="check-circle" size={16} color={iconSelectedColor} style={styles.thumbnailSelectionIcon}/>;
       }
       buttonImage = icon;
     } else {
-      let icon = <Icon name="check-circle-o" size={32} color={'rgba(249, 249, 249, 0.2)'} style={styles.fullScreenSelectionIcon}/>;
+      let icon = <Icon name="check-circle-o" size={32} color={iconUnselectedColor} style={styles.fullScreenSelectionIcon}/>;
       if (selected) {
-        icon = <Icon name="check-circle" size={32} color={'rgba(255, 255, 255, 1)'} style={styles.fullScreenSelectionIcon}/>;
+        icon = <Icon name="check-circle" size={32} color={iconSelectedColor} style={styles.fullScreenSelectionIcon}/>;
       }
       buttonImage = icon;
     }
 
     return (
-      <TouchableWithoutFeedback onPress={this._toggleSelection}>
+      <TouchableWithoutFeedback onPress={this._toggleSelection} >
         {buttonImage}
       </TouchableWithoutFeedback>
     );
@@ -110,7 +114,6 @@ export default class Video extends Component {
   onNavigationStateChange(navState) {
     if (navState.title && navState.title != 'NaN') {
         const realContentHeight = Number(navState.title) || 0; // turn NaN to 0
-        console.log(realContentHeight);
         this.setState({videoRatio: realContentHeight});
     }
   }
@@ -125,8 +128,6 @@ export default class Video extends Component {
       width: width || screen.width,
       height: this.state.videoRatio * width || this.state.videoRatio * screen.width,
     };
-
-    console.log(`width: ${layoutStyle.width} height: ${layoutStyle.height}`);
 
     return (
       <View style={[styles.container, layoutStyle]}>
@@ -188,6 +189,7 @@ Video.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent:'center',
     alignItems:'center',
     backgroundColor:'black',

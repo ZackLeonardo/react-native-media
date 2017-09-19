@@ -13,6 +13,11 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 // import * as Progress from 'react-native-progress';
 
+import CONSTANTS from '../utils/constants';
+
+const iconUnselectedColor = CONSTANTS.ICONUNSELECTEDCOLOR;
+const iconSelectedColor = CONSTANTS.ICONSELECTEDCOLOR;
+
 export default class Photo extends Component {
   constructor(props){
     super(props);
@@ -106,15 +111,15 @@ export default class Photo extends Component {
 
     let buttonImage;
     if (thumbnail) {
-      let icon = <Icon name="check-circle-o" size={16} color={'rgba(249, 249, 249, 0.2)'} style={styles.thumbnailSelectionIcon}/>;
+      let icon = <Icon name="check-circle-o" size={16} color={iconUnselectedColor} style={styles.thumbnailSelectionIcon}/>;
       if (selected) {
-        icon = <Icon name="check-circle" size={16} color={'rgba(255, 255, 255, 1)'} style={styles.thumbnailSelectionIcon}/>;
+        icon = <Icon name="check-circle" size={16} color={iconSelectedColor} style={styles.thumbnailSelectionIcon}/>;
       }
       buttonImage = icon;
     } else {
-      let icon = <Icon name="check-circle-o" size={32} color={'rgba(249, 249, 249, 0.2)'} style={styles.fullScreenSelectionIcon}/>;
+      let icon = <Icon name="check-circle-o" size={32} color={iconUnselectedColor} style={styles.fullScreenSelectionIcon}/>;
       if (selected) {
-        icon = <Icon name="check-circle" size={32} color={'rgba(255, 255, 255, 1)'} style={styles.fullScreenSelectionIcon}/>;
+        icon = <Icon name="check-circle" size={32} color={iconSelectedColor} style={styles.fullScreenSelectionIcon}/>;
       }
       buttonImage = icon;
     }
@@ -126,8 +131,16 @@ export default class Photo extends Component {
     );
   }
 
+  _renderVideoIcon(){
+    return (
+      <View>
+        <Icon name="play-circle-o" size={40} color={iconSelectedColor} style={styles.videoIcon}/>
+      </View>
+    );
+  }
+
   render(){
-    const { resizeMode, width, height } = this.props;
+    const { resizeMode, width, height, thumbnail, showVideoIcon } = this.props;
     const screen = Dimensions.get('window');
     const { uri, error } = this.state;
 
@@ -155,6 +168,7 @@ export default class Photo extends Component {
           resizeMode={resizeMode}
         />
         {this._renderSelectionButton()}
+        {thumbnail&&showVideoIcon ? this._renderVideoIcon() : null}
       </View>
     );
   }
@@ -167,6 +181,7 @@ Photo.defaultProps = {
   thumbnail: false,
   displaySelectionButtons: false,
   selected: false,
+  showVideoIcon: false,
 };
 
 Photo.propTypes = {
@@ -185,6 +200,7 @@ Photo.propTypes = {
   thumbnail: PropTypes.bool,
   displaySelectionButtons: PropTypes.bool,
   selected: PropTypes.bool,
+  showVideoIcon: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
@@ -211,4 +227,8 @@ const styles = StyleSheet.create({
     right: 16,
     backgroundColor: 'transparent',
   },
+  videoIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });
